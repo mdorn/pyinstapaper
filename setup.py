@@ -16,7 +16,9 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'httplib2==0.9.1',
-    'oauth2==1.9.0.post1'
+    'oauth2==1.9.0.post1',
+    'requests==2.7.0',
+    'lxml==3.4.4',
 ]
 
 test_requirements = [
