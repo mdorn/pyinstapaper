@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 '''
-Generate PDF files from recently starred Instapaper articles. Requires
-wkhtmltopdf.
+-Generate PDF files from recently starred Instapaper articles. Requires
+-wkhtmltopdf.
 '''
 
-
+import cgi
 import datetime
 import logging
 import os
@@ -27,17 +27,21 @@ INSTAPAPER_KEY = ''
 INSTAPAPER_SECRET = ''
 INSTAPAPER_LOGIN = ''
 INSTAPAPER_PASSWORD = ''
-PDF_DEST_FOLDER = '/tmp'
+PDF_DEST_FOLDER = '/tmp/instapaper'
+HIGHLIGHTS_DEST_FOLDER = '/tmp/instapaper/highlights'
 
 
 def main():
     instapaper = Instapaper(
-        INSTAPAPER_KEY, INSTAPAPER_SECRET)
+        INSTAPAPER_KEY, INSTAPAPER_SECRET, with_scraper=True)
     instapaper.login(INSTAPAPER_LOGIN, INSTAPAPER_PASSWORD)
-    bookmarks = instapaper.get_bookmarks('starred', 5)
+    folder_id = get_folder_id_by_name(instapaper, 'keep')
+    bookmarks = instapaper.get_bookmarks(folder_id, 5)
     for ct, bookmark in enumerate(bookmarks):
-        create_pdf_from_bookmark(bookmark)
-        bookmark.archive()
+        bookmark.set_scraped_content()
+        pdf_file = create_pdf_from_bookmark(bookmark)
+        create_markdown_files_from_highlights(bookmark, pdf_file)
+    # bookmark.archive()
     logging.info('Saved %d article PDFs to %s', ct + 1, PDF_DEST_FOLDER)
 
 
@@ -49,17 +53,45 @@ def get_folder_id_by_name(instapaper, folder_name):
     raise Exception('Folder ID for name "%s" not found.' % folder_name)
 
 
+def create_markdown_files_from_highlights(bookmark, pdf_file):
+    highlights = bookmark.get_highlights()
+    if not highlights:
+        return False
+    dest_dir = HIGHLIGHTS_DEST_FOLDER
+    filename = os.path.join(dest_dir, 'NOTES - %s.md' % bookmark.title)
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+    text = 'URL: %s\nFile: file://%s' % (bookmark.url, pdf_file)
+    with open(filename, 'w') as file_:
+        file_.write(text.encode('utf-8'))
+        for highlight in highlights:
+            text = highlight.text.encode('utf-8')
+            note = highlight.note.encode('utf-8') if highlight.note else None
+            file_.write('\n\n')
+            file_.write('* %s' % text)
+            if note:
+                file_.write('\n    NOTE: %s' % note)
+
+
 def create_pdf_from_bookmark(bookmark):
     logging.info('Processing %s', bookmark.title)
 
     # add some introductory HTML to the page (title, etc.)
     stylesheet_html = ('<head><style>body {font-family: Verdana;'
                        'font-size: 11pt;}</style></head>')
+    origin_html = bookmark.get_origin_line()
+    additional_html = '<div><h1>%s</h1><p>%s</p>%s</div>' % (
+        cgi.escape(bookmark.title),
+        cgi.escape(bookmark.url),
+        origin_html.rstrip()
+    )
     txt = bookmark.get_text()['data']
     txt = txt.decode('utf-8')
     parser = etree.HTMLParser()
     tree = etree.fromstring(txt, parser)
     tree.insert(0, etree.XML(stylesheet_html))
+    body = tree.getchildren()[1]
+    body.insert(0, etree.XML(additional_html))
     new_html = etree.tostring(tree)
 
     # create/manage the directory structure for the article

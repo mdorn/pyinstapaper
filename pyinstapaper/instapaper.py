@@ -2,11 +2,14 @@
 
 import json
 import logging
+import re
+import requests
 import time
 import urlparse
 from urllib import urlencode
 
 import oauth2 as oauth
+from lxml import etree
 
 BASE_URL = 'https://www.instapaper.com'
 API_VERSION = 'api/1'
@@ -17,6 +20,44 @@ REQUEST_DELAY_SECS = 0.2
 log = logging.getLogger(__name__)
 
 
+class FakeBrowserClient(object):
+    # DISCLAIMER: The code for this class is made available for educational
+    #   purposes only. Use of it may or may not conform to the service's
+    #   acceptable use policy.
+
+    def __init__(self):
+        self.session = None
+
+    def login(self, login_url, username, password):
+        post_vals = {
+            'username': username,
+            'password': password,
+            'keep_logged_in': 'yes'
+        }
+        headers = {}
+
+        self.session = requests.Session()
+        log.info('Logging in as user %s' % username)
+        response = self.session.post(
+            login_url, data=post_vals, headers=headers)
+        # TODO: validate login
+
+    def get_response(self, url, method='GET', post_vals=None, headers={},
+                     returns_json=False):
+        time.sleep(REQUEST_DELAY_SECS)
+        log.info('Requesting URL %s', url)
+        if method == 'POST':
+            request_method = getattr(self.session, 'post')
+        else:
+            request_method = getattr(self.session, 'get')
+        response = request_method(url, data=post_vals, headers=headers)
+        if returns_json:
+            msg_dict = json.loads(response.content)
+            return msg_dict
+        else:
+            return response.content
+
+
 class Instapaper(object):
     '''Instapaper client class.
 
@@ -24,10 +65,11 @@ class Instapaper(object):
     :param oauth_secret str: Instapaper OAuth consumer secret
     '''
 
-    def __init__(self, oauth_key, oauth_secret):
+    def __init__(self, oauth_key, oauth_secret, with_scraper=False):
         self.consumer = oauth.Consumer(oauth_key, oauth_secret)
         self.oauth_client = oauth.Client(self.consumer)
         self.token = None
+        self.scraper = FakeBrowserClient() if with_scraper else None
 
     def login(self, username, password):
         '''Authenticate using XAuth variant of OAuth.
@@ -48,6 +90,8 @@ class Instapaper(object):
         self.token = oauth.Token(
             token['oauth_token'], token['oauth_token_secret'])
         self.oauth_client = oauth.Client(self.consumer, self.token)
+        if self.scraper:
+            self.scraper.login(LOGIN_URL, username, password)
 
     def request(self, path, params=None, returns_json=True,
                 api_version=API_VERSION):
@@ -137,6 +181,7 @@ class InstapaperObject(object):
 
     def __init__(self, client, **data):
         self.client = client
+        self.scraped_content = None
         for attrib in self.ATTRIBUTES:
             setattr(self, attrib, data.get(attrib))
         self.object_id = getattr(self, self.RESOURCE_ID_ATTRIBUTE)
@@ -216,10 +261,45 @@ class Bookmark(InstapaperObject):
         :return: list of ``Highlight`` objects
         :rtype: list
         '''
-        # NOTE: highlights API endpoint still broken as of 5-Oct-2015
-        path = '/'.join(self.RESOURCE, str(self.object_id), 'highlights')
-        response = self.request(path, api_version='1.1')
-        return response
+        # NOTE: get highlights the normal way when API is fixed, as below;
+        #   highlights API endpoint still broken as of 5-Oct-2015
+        # path = '/'.join(self.RESOURCE, str(self.object_id), 'highlights')
+        # response = self.request(path, api_version='1.1')
+        # return response
+
+        highlights = []
+        if not self.scraped_content:
+            raise Exception('Scraped content not set.')
+        pattern = 'highlightWithJson\((.*)\)'
+        result = re.findall(pattern, self.scraped_content)
+        highlights = []
+        if result:
+            items = json.loads(result[0])
+            for item in items:
+                highlights.append(Highlight(self, **item))
+        return highlights
+
+    ###
+    # "Unofficial" API methods below. DISCLAIMER: for educational purposes only
+    ###
+
+    def set_scraped_content(self):
+        if not self.client.scraper:
+            raise Exception('Must instantiate client with scraper.')
+        result = self.client.scraper.get_response(
+            'https://www.instapaper.com/read/%s' % self.object_id)
+        self.scraped_content = result
+
+    def get_origin_line(self):
+        # NOTE: Author name and publication date not included in API, maybe
+        #   because auto-retrieving that information is not reliable ... ?
+        if not self.scraped_content:
+            raise Exception('Scraped content not set.')
+        parser = etree.HTMLParser()
+        tree = etree.fromstring(self.scraped_content, parser)
+        origin_element = tree.xpath('//*[@class="origin_line"]')[0]
+        origin_html = etree.tostring(origin_element)
+        return origin_html
 
 
 class Folder(InstapaperObject):
