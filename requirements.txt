@@ -1,0 +1,4 @@
+bumpversion==0.5.3
+wheel==0.23.0
+httplib2==0.9.1
+oauth2==1.9.0.post1
