@@ -21,8 +21,8 @@ requirements = [
 
 test_requirements = [
     'coverage==4.0',
-    'mock==1.3.0',
-    'nose==1.3.7',
+    'mock',  # ==1.3.0',
+    'nose',  # ==1.3.7',
     'spec==1.3.1',
 ]
 
