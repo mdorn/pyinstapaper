@@ -3,6 +3,7 @@
 language: python
 
 python:
+  # TODO: support all Python versions
   # - "3.4"
   # - "3.3"
   - "2.7"

@@ -9,7 +9,7 @@ from urllib import urlencode
 import oauth2 as oauth
 
 BASE_URL = 'https://www.instapaper.com'
-API_VERSION = 'api/1'
+API_VERSION = '1'
 ACCESS_TOKEN = 'oauth/access_token'
 LOGIN_URL = 'https://www.instapaper.com/user/login'
 REQUEST_DELAY_SECS = 0.2
@@ -50,22 +50,26 @@ class Instapaper(object):
         self.oauth_client = oauth.Client(self.consumer, self.token)
 
     def request(self, path, params=None, returns_json=True,
-                api_version=API_VERSION):
+                method='POST', api_version=API_VERSION):
         '''Process a request using the OAuth client's request method.
 
         :param str path: Path fragment to the API endpoint, e.g. "resource/ID"
         :param dict params: Parameters to pass to request
+        :param str method: Optional HTTP method, normally POST for Instapaper
         :param str api_version: Optional alternative API version
         :returns: response headers and body
         :retval: dict
         '''
         time.sleep(REQUEST_DELAY_SECS)
-        full_path = '/'.join([BASE_URL, api_version, path])
+        full_path = '/'.join([BASE_URL, 'api/%s' % api_version, path])
         params = urlencode(params) if params else None
+        log.debug('URL: %s', full_path)
+        request_kwargs = {'method': method}
+        if params:
+            request_kwargs['body'] = params
         response, content = self.oauth_client.request(
-            full_path, method='POST', body=params
-        )
-        log.debug('URL: %s; CONTENT: %s ...', full_path, content[:50])
+            full_path, **request_kwargs)
+        log.debug('CONTENT: %s ...', content[:50])
         if returns_json:
             try:
                 data = json.loads(content)
@@ -216,10 +220,17 @@ class Bookmark(InstapaperObject):
         :return: list of ``Highlight`` objects
         :rtype: list
         '''
-        # NOTE: highlights API endpoint still broken as of 5-Oct-2015
-        path = '/'.join(self.RESOURCE, str(self.object_id), 'highlights')
-        response = self.request(path, api_version='1.1')
-        return response
+        # NOTE: all Instapaper API methods use POST except this one!
+        path = '/'.join([self.RESOURCE, str(self.object_id), 'highlights'])
+        response = self.client.request(path, method='GET', api_version='1.1')
+        items = response['data']
+        highlights = []
+        for item in items:
+            if item.get('type') == 'error':
+                raise Exception(item.get('message'))
+            elif item.get('type') == 'highlight':
+                highlights.append(Highlight(self, **item))
+        return highlights
 
 
 class Folder(InstapaperObject):
@@ -269,7 +280,7 @@ class Highlight(InstapaperObject):
         'note',
         'time',
         'position',
-        'article_id',
+        'bookmark_id',
         'type',
         'slug',
     ]
@@ -279,7 +290,7 @@ class Highlight(InstapaperObject):
 
     def __str__(self):
         return 'Highlight %s for Article %s' % (
-            self.object_id, self.article_id)
+            self.object_id, self.bookmark_id)
 
     def create(self):
         # TODO
