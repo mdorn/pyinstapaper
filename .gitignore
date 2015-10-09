@@ -26,6 +26,7 @@ pip-log.txt
 .tox
 nosetests.xml
 htmlcov
+coverage.xml
 
 # Translations
 *.mo
@@ -41,3 +42,5 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+
+.DS_Store

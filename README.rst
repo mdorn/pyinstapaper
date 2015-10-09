@@ -2,7 +2,7 @@
 Python Instapaper API wrapper
 ===============================
 
-.. image:: https://img.shields.io/travis/mdorn/pyinstapaper.svg
+.. image:: https://travis-ci.org/mdorn/pyinstapaper.svg
         :target: https://travis-ci.org/mdorn/pyinstapaper
 
 .. image:: https://img.shields.io/pypi/v/pyinstapaper.svg

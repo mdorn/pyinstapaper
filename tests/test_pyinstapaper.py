@@ -91,6 +91,29 @@ BOOKMARK_STAR_RESPONSE = (
     '''
 )
 
+HIGHLIGHTS_RESPONSE = (
+    {'status': '200'},
+    '''
+[
+    {
+        "highlight_id": 123,
+        "text": "Here is the highlighted text",
+        "bookmark_id": 123,
+        "time": 1443559223,
+        "position": 0,
+        "type": "highlight"
+    },
+    {
+        "highlight_id": 456,
+        "text": "an important phrase",
+        "bookmark_id": 123,
+        "time": 1443559223,
+        "position": 0,
+        "type": "highlight"
+    }
+]
+    ''')
+
 
 def request_side_effect(*args, **kwargs):
     path = args[0]
@@ -100,6 +123,8 @@ def request_side_effect(*args, **kwargs):
         return BOOKMARKS_RESPONSE
     elif path.endswith('bookmarks/star'):
         return BOOKMARK_STAR_RESPONSE
+    elif path.endswith('/highlights'):
+        return HIGHLIGHTS_RESPONSE
 
 
 class TestPyInstapaper(unittest.TestCase):
@@ -108,17 +133,32 @@ class TestPyInstapaper(unittest.TestCase):
         pass
 
     @patch('oauth2.Client')
-    def test_api_methods(self, oauth2_client_patched):
-        # TODO: break out into more specific tests
+    def _get_pacthed_client(self, oauth2_client_patched):
         client = Instapaper('KEY', 'SECRET')
         oauth_client = oauth2_client_patched.return_value
         oauth_client.request.side_effect = request_side_effect
         client.login('USERNAME', 'PASSWORD')
+        return client
+
+    def test_bookmarks(self):
+        client = self._get_pacthed_client()
         bookmarks = client.get_bookmarks()
         for ct, bookmark in enumerate(bookmarks):
             self.assertIsInstance(bookmark, Bookmark)
+
+        bookmark = bookmarks[0]
+        self.assertEqual(bookmark.title, 'Hello World')
         bookmark.star()
-        # TODO: test bookmark output
+        # TODO: test bookmark.star output
+
+    def test_highlights(self):
+        client = self._get_pacthed_client()
+        bookmarks = client.get_bookmarks()
+        bookmark = bookmarks[0]
+        highlights = bookmark.get_highlights()
+        self.assertEqual(len(highlights), 2)
+        highlight = highlights[0]
+        self.assertEqual(highlight.text, 'Here is the highlighted text')
 
     def tearDown(self):  # noqa
         pass
