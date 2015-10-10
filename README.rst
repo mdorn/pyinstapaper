@@ -59,3 +59,9 @@ Additional info
 * Free software: MIT License
 * Documentation: https://pyinstapaper.readthedocs.org.
 * Boilerplate courtesy of cookiecutter: https://github.com/audreyr/cookiecutter
+* Thanks to `Ryan Galloway`_ for pointing the way to using the Python oauth2
+  library for Instapaper's XAuth implementation, though ideally pyinstapaper
+  would use `requests-oauthlib`_
+
+.. _Ryan Galloway: https://github.com/rsgalloway/instapaper
+.. _requests-oauthlib: https://requests-oauthlib.readthedocs.org/en/latest/
