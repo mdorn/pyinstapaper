@@ -23,7 +23,7 @@ Usage
 
 .. code-block:: python
 
-    from pyinstapaper import Instapaper, Folder
+    from pyinstapaper.instapaper import Instapaper, Folder
 
     INSTAPAPER_KEY = 'MY_INSTAPAPER_API_KEY'
     INSTAPAPER_SECRET = 'MY_INSTAPAPER_API_SECRET'
