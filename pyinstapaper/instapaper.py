@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 import json
 import logging
 import time
@@ -12,7 +14,7 @@ BASE_URL = 'https://www.instapaper.com'
 API_VERSION = '1'
 ACCESS_TOKEN = 'oauth/access_token'
 LOGIN_URL = 'https://www.instapaper.com/user/login'
-REQUEST_DELAY_SECS = 0.2
+REQUEST_DELAY_SECS = 0.5
 
 log = logging.getLogger(__name__)
 
@@ -142,7 +144,17 @@ class InstapaperObject(object):
     def __init__(self, client, **data):
         self.client = client
         for attrib in self.ATTRIBUTES:
-            setattr(self, attrib, data.get(attrib))
+            val = data.get(attrib)
+            if hasattr(self, 'TIMESTAMP_ATTRS'):
+                if attrib in self.TIMESTAMP_ATTRS:
+                    try:
+                        val = datetime.fromtimestamp(int(val))
+                    except ValueError:
+                        log.warn(
+                            'Could not cast %s for %s as datetime',
+                            val, attrib
+                        )
+            setattr(self, attrib, val)
         self.object_id = getattr(self, self.RESOURCE_ID_ATTRIBUTE)
         for action in self.SIMPLE_ACTIONS:
             setattr(self, action, lambda x: self._simple_action(x))
@@ -203,6 +215,10 @@ class Bookmark(InstapaperObject):
         'type',
         'private_source'
     ]
+    TIMESTAMP_ATTRS = [
+        'progress_timestamp',
+        'time'
+    ]
     SIMPLE_ACTIONS = [
         'delete',
         'star',
@@ -212,7 +228,7 @@ class Bookmark(InstapaperObject):
     ]
 
     def __str__(self):
-        return 'Bookmark %s: %s' % (self.object_id, self.title)
+        return 'Bookmark %s: %s' % (self.object_id, self.title.encode('utf-8'))
 
     def get_highlights(self):
         '''Get highlights for Bookmark instance.
@@ -283,6 +299,9 @@ class Highlight(InstapaperObject):
         'bookmark_id',
         'type',
         'slug',
+    ]
+    TIMESTAMP_ATTRS = [
+        'time',
     ]
     SIMPLE_ACTIONS = [
         'delete',
