@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
-__author__ = 'Matt Dorn'
+"""Top-level package for PyInstapaper."""
+
+__author__ = """Matt Dorn"""
 __email__ = 'mdorn@textmethod.com'
-__version__ = '0.1.0'
+__version__ = '0.2.0'

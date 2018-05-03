@@ -1,16 +1,20 @@
-===============================
-Python Instapaper API wrapper
-===============================
+============
+PyInstapaper
+============
 
-.. image:: https://travis-ci.org/mdorn/pyinstapaper.svg
-        :target: https://travis-ci.org/mdorn/pyinstapaper
 
 .. image:: https://img.shields.io/pypi/v/pyinstapaper.svg
         :target: https://pypi.python.org/pypi/pyinstapaper
 
+.. image:: https://img.shields.io/travis/mdorn/pyinstapaper.svg
+        :target: https://travis-ci.org/mdorn/pyinstapaper
+
+.. image:: https://readthedocs.org/projects/pyinstapaper/badge/?version=latest
+        :target: https://pyinstapaper.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
 
 Instapaper_ is a tool for saving web pages to read later, e.g. offline on a
-mobile device.  PyInstapaper is a Python wrapper for the `full Instapaper API`_.  
+mobile device.  PyInstapaper is a Python wrapper for the `full Instapaper API`_.
 
 .. _Instapaper: https://www.instapaper.com
 .. _full Instapaper API: https://www.instapaper.com/api
@@ -29,7 +33,7 @@ Usage
     INSTAPAPER_SECRET = 'MY_INSTAPAPER_API_SECRET'
     INSTAPAPER_LOGIN = 'me@example.com'
     INSTAPAPER_PASSWORD = 'p@ssw0rd'
-    
+
     instapaper = Instapaper(INSTAPAPER_KEY, INSTAPAPER_SECRET)
     instapaper.login(INSTAPAPER_LOGIN, INSTAPAPER_PASSWORD)
 
@@ -50,7 +54,7 @@ Installation
 To install PyInstapaper, simply:
 
 .. code-block:: bash
-    
+
     pip install pyinstapaper
 
 Additional info

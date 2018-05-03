@@ -44,3 +44,8 @@ output/*/index.html
 docs/_build
 
 .DS_Store
+
+# custom
+env/
+env2/
+env3/

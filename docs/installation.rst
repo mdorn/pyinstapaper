@@ -1,12 +1,51 @@
+.. highlight:: shell
+
 ============
 Installation
 ============
 
-At the command line::
 
-    $ easy_install pyinstapaper
+Stable release
+--------------
 
-Or, if you have virtualenvwrapper installed::
+To install PyInstapaper, run this command in your terminal:
 
-    $ mkvirtualenv pyinstapaper
+.. code-block:: console
+
     $ pip install pyinstapaper
+
+This is the preferred method to install PyInstapaper, as it will always install the most recent stable release.
+
+If you don't have `pip`_ installed, this `Python installation guide`_ can guide
+you through the process.
+
+.. _pip: https://pip.pypa.io
+.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
+
+
+From sources
+------------
+
+The sources for PyInstapaper can be downloaded from the `Github repo`_.
+
+You can either clone the public repository:
+
+.. code-block:: console
+
+    $ git clone git://github.com/mdorn/pyinstapaper
+
+Or download the `tarball`_:
+
+.. code-block:: console
+
+    $ curl  -OL https://github.com/mdorn/pyinstapaper/tarball/master
+
+Once you have a copy of the source, you can install it with:
+
+.. code-block:: console
+
+    $ python setup.py install
+
+
+.. _Github repo: https://github.com/mdorn/pyinstapaper
+.. _tarball: https://github.com/mdorn/pyinstapaper/tarball/master
