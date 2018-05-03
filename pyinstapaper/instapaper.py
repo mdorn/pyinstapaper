@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime
 
 import json
 import logging
 import time
-import urlparse
-from urllib import urlencode
 
 import oauth2 as oauth
+
+# for python2/3 compat
+from future.moves.urllib.parse import urlencode, parse_qsl
 
 BASE_URL = 'https://www.instapaper.com'
 API_VERSION = '1'
@@ -46,7 +46,7 @@ class Instapaper(object):
             },
             returns_json=False
         )
-        token = dict(urlparse.parse_qsl(response['data']))
+        token = dict(parse_qsl(response['data'].decode()))
         self.token = oauth.Token(
             token['oauth_token'], token['oauth_token_secret'])
         self.oauth_client = oauth.Client(self.consumer, self.token)
