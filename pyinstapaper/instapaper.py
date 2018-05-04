@@ -164,7 +164,11 @@ class InstapaperObject(object):
         for action in self.SIMPLE_ACTIONS:
             setattr(self, action, lambda x: self._simple_action(x))
             instance_method = getattr(self, action)
-            instance_method.func_defaults = (action,)
+            try:
+                instance_method.__defaults__ = (action,)
+            except AttributeError:
+                # ugh, for py2.7 compat
+                instance_method.func_defaults = (action,)
 
     def add(self):
         '''Save an object to Instapaper after instantiating it.
