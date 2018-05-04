@@ -1,17 +1,18 @@
-# Config file for automatic testing at travis-ci.org
-
 language: python
-
 python:
-  # TODO: support all Python versions
-  # - "3.4"
-  # - "3.3"
-  - "2.7"
-  # - "2.6"
-  # - "pypy"
-
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -r requirements.txt
-
-# command to run tests, e.g. python setup.py test
-script: python setup.py nosetests
+- 3.6
+- 3.5
+- 3.4
+- 2.7
+install: pip install -U tox-travis
+script: tox
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: mdorn
+  password:
+    secure: dC7bKii4lxG36Ey4dvnUOEdHzB+BsxWNaidGt1tiDernxZF/pGjzR9X2vZy2+zNyj8z251PWHHy8YOil3Rz5Rg9G3F05E4Zlk4jgta6TVeUeMrVedo0G1duHqTw1/ql4UhImC2I5ksBGBLBj2UqaxyqvycS+jb1r33KByMCmpyKRc46ANhKELl0UYm5IATdEz7Ewn9EYY6T7zRsLObOOwZV3lYTWYSayw7JeCPWibUNi3bA9vNJyFZ7hB5Z1ID1QAOKvm8ya4zHYO3GUhZmv1Rm74fhGB1dTuCdU7+/4C3iy6+qtCjRYRfaSKYrMFgpBBzbcCAQY5yIMvq065SwHwR0B+bLFa2itQ9gWsg0rqRDdZya2D3MbRo5GVndYgNoArhfhrsC5zVtrH9oFcd7LAR9wvk8FeGdTyGa8r4QrbsjEF8eXhmcGb9gdjSB5Il8XAt3QBT0zN6JSzNplV1VHE/RA4CyU7m/bSZZCl/1RmBu2vyrY+Dra5KdPPgWNfPKHjNvyd5nn9XvR7xV8YlUmChqvIaK6SQ8xOwdbMkN13KtzmmGq1Y+XhypSjn+90aYdC4F87DzugRRO0I36C0U5UJjV1vidoYWqoJNKsXU0nEPhju0sQ6/BVyXKNvobqTByIU4AfWo0hdEr/r4C3PwxV0zEuMYAJe5SCbISghj6PiE=
+  on:
+    tags: true
+    repo: mdorn/pyinstapaper
+    python: 3.6

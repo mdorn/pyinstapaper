@@ -17,9 +17,10 @@ from pyinstapaper.instapaper import Instapaper, Bookmark
 
 LOGIN_RESPONSE = (
     {'status': '200'},
-    'oauth_token_secret=abc&oauth_token=xyz'
+    b'oauth_token_secret=abc&oauth_token=xyz'
 )
 
+# TODO: use pytest fixtures
 BOOKMARKS_RESPONSE = (
     {'status': '200'},
     '''
