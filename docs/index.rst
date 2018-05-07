@@ -1,5 +1,5 @@
 Welcome to PyInstapaper's documentation!
-======================================
+========================================
 
 .. toctree::
    :maxdepth: 2
