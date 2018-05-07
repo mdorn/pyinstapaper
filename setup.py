@@ -12,7 +12,13 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 # requirements = ['Click>=6.0', ]
-requirements = []
+requirements = [
+    'future',
+    'httplib2>=0.9',
+    'lxml>=3.4,<=4',
+    'oauth2>=1.9,<2',
+    'requests>=2.7,<3',
+]
 
 setup_requirements = ['pytest-runner', ]
 
