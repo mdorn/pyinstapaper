@@ -74,7 +74,7 @@ class Instapaper(object):
         log.debug('CONTENT: %s ...', content[:50])
         if returns_json:
             try:
-                data = json.loads(content)
+                data = json.loads(content.decode('utf-8'))
                 if isinstance(data, list) and len(data) == 1:
                     # ugly -- API always returns a list even when you expect
                     # only one item
