@@ -15,7 +15,7 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'future',
     'httplib2>=0.9',
-    'lxml>=3.4,<=4',
+    'lxml>=3.4,<5',
     'oauth2>=1.9,<2',
     'requests>=2.7,<3',
 ]
