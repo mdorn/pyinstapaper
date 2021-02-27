@@ -105,6 +105,19 @@ class Instapaper(object):
         :returns: List of user's bookmarks
         :rtype: list
         """
+        bookmarks, _ = self.get_bookmarks_with_deleted(folder, limit, have)
+        return bookmarks
+
+    def get_bookmarks_with_deleted(self, folder='unread', limit=25, have=None):
+        """Return list of user's bookmarks and deleted bookmarks.
+
+        :param str folder: Optional. Possible values are unread (default),
+            starred, archive, or a folder_id value.
+        :param int limit: Optional. A number between 1 and 500, default 25.
+        :param list have: Optional. A list of IDs to exclude from results
+        :returns: (list of bookmarks, list of deleted bookmark IDs)
+        :rtype: (list, list)
+        """
         path = 'bookmarks/list'
         params = {'folder_id': folder, 'limit': limit}
         if have:
@@ -113,12 +126,15 @@ class Instapaper(object):
         response = self.request(path, params)
         items = response['data']
         bookmarks = []
+        deleted = []
         for item in items:
             if item.get('type') == 'error':
                 raise Exception(item.get('message'))
             elif item.get('type') == 'bookmark':
                 bookmarks.append(Bookmark(self, **item))
-        return bookmarks
+            elif item.get('type') == 'meta':
+                deleted += item.get('delete_ids', '').split(',')
+        return (bookmarks, deleted)
 
     def get_folders(self):
         """Return list of user's folders.
